@@ -47,5 +47,4 @@ src/
 
 ## Participantes
 
-- Nome do primeiro integrante
-- Nome do segundo integrante
+- Kelly Venâncio dos Santos
