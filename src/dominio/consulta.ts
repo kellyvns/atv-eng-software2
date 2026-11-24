@@ -1,5 +1,9 @@
 
-export type TipoConsulta = "CONSULTA" | "VACINA" | "CIRURGIA";
+export type TipoConsulta =
+  | "CONSULTA"
+  | "VACINA"
+  | "CIRURGIA"
+  | "BANHO_TOSA";
 
 export type StatusConsulta = "AGENDADA" | "CANCELADA";
 
