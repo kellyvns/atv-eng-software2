@@ -1,10 +1,16 @@
+
 import { TipoConsulta } from "./consulta";
-import { RegraDePreco } from "./regra-de-preco";
+import { RegraDePreco, ICalculadoraPreco } from "./regra-de-preco";
 
-export class CalculadoraPreco {
-  constructor(private regras: Record<TipoConsulta, RegraDePreco>) {}
+export class CalculadoraPreco implements ICalculadoraPreco {
+  constructor(
+    private regras: Record<TipoConsulta, RegraDePreco>
+  ) {}
 
-  calcular(tipo: TipoConsulta, planoPetMais: boolean): number {
+  calcular(
+    tipo: TipoConsulta,
+    planoPetMais: boolean
+  ): number {
     const regra = this.regras[tipo];
 
     if (!regra) {
