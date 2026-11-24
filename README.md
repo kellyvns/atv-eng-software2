@@ -48,5 +48,4 @@ src/
 ## Participantes
 
 - Kelly Venâncio dos Santos
-  ![Uploading image.png…]()
 
