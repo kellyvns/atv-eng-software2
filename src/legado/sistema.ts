@@ -1,59 +1,37 @@
-
 import { ZapLegacySDK } from "../libs/zap-legacy-sdk";
 
-export class SistemaAgendamento {
-  private consultas: any[] = [];
-  private proximoId = 1;
-  private zap = new ZapLegacySDK();
+export class GerenciadorClinica {
+  lista: any[] = [];
+  zap = new ZapLegacySDK("TOKEN-123");
 
-  agendar(
-    tutor: string,
-    telefone: string,
-    pet: string,
-    tipo: string,
-    dataHora: string,
-    planoPetMais: boolean
-  ): void {
-    let valor = 120;
-
-    if (tipo === "VACINA") {
-      valor = 80;
-    } else if (tipo === "CIRURGIA") {
-      valor = 540;
+  fazer(d: any) {
+    if (!d.nome || !d.tel || !d.pet) {
+      console.log("erro");
+      return null;
     }
-
-    if (planoPetMais) {
-      valor = valor * 0.8;
-    }
-
-    const consulta = {
-      id: this.proximoId++,
-      tutor,
-      telefone,
-      pet,
-      tipo,
-      dataHora,
-      planoPetMais,
-      valor,
-      status: "AGENDADA"
-    };
-
-    this.consultas.push(consulta);
-
-    this.zap.dispararMsg(telefone, {
-      txt: `Olá ${tutor}! O agendamento do pet ${pet} foi realizado. Valor: R$ ${valor}.`
+    let v = 0;
+    if (d.t == 1)
+      v = 120; // consulta
+    else if (d.t == 2)
+      v = 80; // vacina
+    else if (d.t == 3) v = 120 * 4.5; // cirurgia
+    if (d.plano == true) v = v - v * 0.2;
+    const x = { id: this.lista.length + 1, ...d, valor: v, status: "AG" };
+    this.lista.push(x);
+    this.zap.dispararMsg("55" + d.tel, {
+      txt: "Ola " + d.nome + ", consulta do " + d.pet + " marcada! R$" + v,
     });
+    console.log("salvo " + x.id);
+    return x;
   }
 
-  cancelar(id: number): void {
-    const consulta = this.consultas.find(c => c.id === id);
-
-    if (consulta) {
-      consulta.status = "CANCELADA";
+  cancelar(id: number) {
+    for (let i = 0; i < this.lista.length; i++) {
+      if (this.lista[i].id == id) {
+        this.lista[i].status = "CN";
+        return true;
+      }
     }
-  }
-
-  listar(): any[] {
-    return this.consultas;
+    return false;
   }
 }

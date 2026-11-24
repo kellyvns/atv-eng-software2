@@ -1,78 +1,70 @@
-
-import { TipoConsulta } from "./dominio/consulta";
-
-import { CalculadoraPreco } from "./dominio/calculadora-preco";
-
+import { TipoAtendimento } from "./domain/TipoAtendimento";
+import { CalculadoraDePreco } from "./pricing/CalculadoraDePreco";
 import {
+  PrecoBanhoTosa,
+  PrecoCirurgia,
   PrecoConsulta,
   PrecoVacina,
-  PrecoCirurgia,
-  PrecoBanhoTosa
-} from "./dominio/regras";
-
-import { RepositorioEmMemoria } from "./repositorios/repositorio-em-memoria";
-
+} from "./pricing/regras";
+import { RepositorioEmMemoria } from "./repositories/RepositorioEmMemoria";
 import { ZapLegacySDK } from "./libs/zap-legacy-sdk";
+import { ZapAdapter } from "./notifications/ZapAdapter";
+import { EmailFakeNotificador } from "./notifications/EmailFakeNotificador";
+import { NotificadorComposto } from "./notifications/NotificadorComposto";
+import { ClinicaFacade } from "./facade/ClinicaFacade";
 
-import { ZapAdapter } from "./notificacoes/zap-adapter";
+const TOKEN_ZAP = "TOKEN-123";
 
-import { EmailFakeNotificador } from "./notificacoes/email-fake-notificador";
-
-import { NotificadorComEmail } from "./notificacoes/notificador-com-email";
-
-import { ClinicaFacade } from "./fachada/clinica-facade";
-
-// Regras de preços
-const regras = {
-  CONSULTA: new PrecoConsulta(),
-  VACINA: new PrecoVacina(),
-  CIRURGIA: new PrecoCirurgia(),
-  BANHO_TOSA: new PrecoBanhoTosa()
-};
-
-// Instâncias principais
-const calculadora = new CalculadoraPreco(regras);
+const calculadora = new CalculadoraDePreco([
+  new PrecoConsulta(),
+  new PrecoVacina(),
+  new PrecoCirurgia(),
+  new PrecoBanhoTosa(),
+]);
 
 const repositorio = new RepositorioEmMemoria();
 
-// Integração com biblioteca antiga
-const zap = new ZapLegacySDK();
-const zapAdapter = new ZapAdapter(zap);
+const notificador = new NotificadorComposto([
+  new ZapAdapter(new ZapLegacySDK(TOKEN_ZAP)),
+  new EmailFakeNotificador(),
+]);
 
-// Notificações
-const email = new EmailFakeNotificador();
+const clinica = new ClinicaFacade(repositorio, calculadora, notificador);
 
-const notificador = new NotificadorComEmail(
-  zapAdapter,
-  email
-);
+console.log("--- AGENDAMENTOS ---");
 
-// Fachada
-const clinica = new ClinicaFacade(
-  repositorio,
-  calculadora,
-  notificador
-);
-
-// Exemplo de agendamento
-const consulta = clinica.agendar({
-  tutor: "Maria",
-  telefone: "11999999999",
-  pet: "Rex",
-  tipo: "CONSULTA" as TipoConsulta,
-  dataHora: "2026-11-25 14:00",
-  planoPetMais: true
+clinica.agendar({
+  tutor: "Ana",
+  telefone: "31999990000",
+  pet: "Thor",
+  tipo: TipoAtendimento.CONSULTA,
+  dataHora: new Date(2027, 0, 10, 14, 0),
+  planoPetMais: false,
 });
 
-console.log("\n--- CONSULTA CADASTRADA ---");
-console.log(consulta);
+clinica.agendar({
+  tutor: "Bruno",
+  telefone: "11988887777",
+  pet: "Luna",
+  tipo: TipoAtendimento.CIRURGIA,
+  dataHora: new Date(2027, 0, 11, 9, 30),
+  planoPetMais: true,
+});
+
+const banhoTosa = clinica.agendar({
+  tutor: "Carla",
+  telefone: "21977776666",
+  pet: "Mel",
+  tipo: TipoAtendimento.BANHO_TOSA,
+  dataHora: new Date(2027, 0, 12, 16, 0),
+  planoPetMais: false,
+});
 
 console.log("\n--- LISTAGEM DE CONSULTAS ---");
-console.log(clinica.listar());
+console.table(clinica.listar());
 
 console.log("\n--- CANCELAMENTO ---");
-console.log("Cancelamento realizado:", clinica.cancelar(consulta.id));
-
-console.log("\n--- STATUS FINAL ---");
-console.log(consulta.getStatus());
-
+const cancelada = clinica.cancelar(banhoTosa.id);
+console.log(
+  `Consulta ${cancelada.id} (${cancelada.pet}) -> ${cancelada.status}`,
+);
