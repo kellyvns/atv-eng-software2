@@ -1,4 +1,4 @@
-import { TipoAtendimento } from "./TipoAtendimento";
+﻿import { TipoAtendimento } from "./TipoAtendimento";
 
 export type StatusConsulta = "AGENDADA" | "CANCELADA";
 
@@ -15,4 +15,5 @@ export interface Consulta extends NovaConsulta {
   id: number;
   valor: number;
   status: StatusConsulta;
+  taxaCancelamento?: number;
 }
