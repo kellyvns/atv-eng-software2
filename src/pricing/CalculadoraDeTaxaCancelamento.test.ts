@@ -21,4 +21,24 @@ describe("CalculadoraDeTaxaCancelamento", () => {
   it("cobra 30% com 2h exatas de antecedência", () => {
     expect(calc.calcular(120, inicio, antes(2), false)).toBe(36);
   });
+
+  it("cobra 50% com 1h59min de antecedência", () => {
+    expect(calc.calcular(120, inicio, antes(1, 59), false)).toBe(60);
+  });
+
+  it("cobra 100% quando cancela na hora da consulta", () => {
+    expect(calc.calcular(120, inicio, antes(0), false)).toBe(120);
+  });
+
+  it("cobra 100% quando a consulta já começou", () => {
+    expect(calc.calcular(120, inicio, antes(-1), false)).toBe(120);
+  });
+
+  it("corta a taxa pela metade para cliente Pet+", () => {
+    expect(calc.calcular(120, inicio, antes(1), true)).toBe(30);
+  });
+
+  it("lança erro quando o valor é zero", () => {
+    expect(() => calc.calcular(0, inicio, antes(48), false)).toThrow("Valor inválido");
+  });
 });
